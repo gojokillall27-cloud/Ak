@@ -1,0 +1,727 @@
+-- AK HUB - FULL VERSION (OPTIMIZED FOR DELTA X)
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local CoreGui = game:GetService("CoreGui")
+local UserInputService = game:GetService("UserInputService")
+local LocalPlayer = Players.LocalPlayer
+local Camera = workspace.CurrentCamera
+
+-- Xóa GUI cũ nếu có
+pcall(function()
+    if CoreGui:FindFirstChild("AKHubFullFixed") then
+        CoreGui.AKHubFullFixed:Destroy()
+    end
+end)
+
+local ScreenGui = Instance.new("ScreenGui")
+ScreenGui.Name = "AKHubFullFixed"
+ScreenGui.Parent = CoreGui
+ScreenGui.ResetOnSpawn = false
+
+-- Nút mở/đóng menu (Hình tròn chữ AK)
+local ToggleMenuBtn = Instance.new("TextButton", ScreenGui)
+ToggleMenuBtn.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+ToggleMenuBtn.Position = UDim2.new(0, 30, 0.35, 0)
+ToggleMenuBtn.Size = UDim2.new(0, 60, 0, 60)
+ToggleMenuBtn.Text = "AK"
+ToggleMenuBtn.TextColor3 = Color3.fromRGB(0, 255, 128)
+ToggleMenuBtn.Font = Enum.Font.SourceSansBold
+ToggleMenuBtn.TextSize = 22
+ToggleMenuBtn.Draggable = true
+Instance.new("UICorner", ToggleMenuBtn).CornerRadius = UDim.new(1, 0)
+
+-- Khung thông tin Target hiển thị trên màn hình
+local TargetInfoFrame = Instance.new("Frame", ScreenGui)
+TargetInfoFrame.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
+TargetInfoFrame.Position = UDim2.new(0.5, -125, 0.12, 0)
+TargetInfoFrame.Size = UDim2.new(0, 250, 0, 65)
+TargetInfoFrame.Visible = false
+Instance.new("UICorner", TargetInfoFrame).CornerRadius = UDim.new(0, 8)
+
+local TargetNameLabel = Instance.new("TextLabel", TargetInfoFrame)
+TargetNameLabel.Position = UDim2.new(0, 10, 0, 8)
+TargetNameLabel.Size = UDim2.new(1, -20, 0, 20)
+TargetNameLabel.Text = "Target: None"
+TargetNameLabel.TextColor3 = Color3.fromRGB(0, 255, 128)
+TargetNameLabel.Font = Enum.Font.SourceSansBold
+TargetNameLabel.TextSize = 14
+TargetNameLabel.BackgroundTransparency = 1
+TargetNameLabel.TextXAlignment = Enum.TextXAlignment.Left
+
+local TargetDistLabel = Instance.new("TextLabel", TargetInfoFrame)
+TargetDistLabel.Position = UDim2.new(0, 10, 0, 32)
+TargetDistLabel.Size = UDim2.new(1, -20, 0, 20)
+TargetDistLabel.Text = "Distance: 0 studs | HP: 100%"
+TargetDistLabel.TextColor3 = Color3.new(1, 1, 1)
+TargetDistLabel.Font = Enum.Font.SourceSans
+TargetDistLabel.TextSize = 12
+TargetDistLabel.BackgroundTransparency = 1
+TargetDistLabel.TextXAlignment = Enum.TextXAlignment.Left
+
+-- Menu Chính
+local MainFrame = Instance.new("Frame", ScreenGui)
+MainFrame.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
+MainFrame.Position = UDim2.new(0.5, -240, 0.5, -210)
+MainFrame.Size = UDim2.new(0, 480, 0, 420)
+MainFrame.Visible = true
+Instance.new("UICorner", MainFrame).CornerRadius = UDim.new(0, 10)
+
+local TopBar = Instance.new("Frame", MainFrame)
+TopBar.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
+TopBar.Size = UDim2.new(1, 0, 0, 40)
+Instance.new("UICorner", TopBar).CornerRadius = UDim.new(0, 10)
+
+local Title = Instance.new("TextLabel", TopBar)
+Title.Position = UDim2.new(0, 15, 0, 0)
+Title.Size = UDim2.new(0, 250, 1, 0)
+Title.Text = "AK HUB - FULL VERSION"
+Title.TextColor3 = Color3.fromRGB(0, 255, 128)
+Title.Font = Enum.Font.SourceSansBold
+Title.TextSize = 16
+Title.BackgroundTransparency = 1
+Title.TextXAlignment = Enum.TextXAlignment.Left
+
+local CloseBtn = Instance.new("TextButton", TopBar)
+CloseBtn.Position = UDim2.new(1, -35, 0.5, -12)
+CloseBtn.Size = UDim2.new(0, 24, 0, 24)
+CloseBtn.BackgroundColor3 = Color3.fromRGB(200, 50, 50)
+CloseBtn.Text = "X"
+CloseBtn.TextColor3 = Color3.new(1, 1, 1)
+CloseBtn.Font = Enum.Font.SourceSansBold
+Instance.new("UICorner", CloseBtn).CornerRadius = UDim.new(0, 4)
+
+-- Thanh Tabs (Chuyển qua lại giữa các mục)
+local TabBar = Instance.new("Frame", MainFrame)
+TabBar.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+TabBar.Position = UDim2.new(0, 10, 0, 45)
+TabBar.Size = UDim2.new(1, -20, 0, 35)
+Instance.new("UICorner", TabBar).CornerRadius = UDim.new(0, 6)
+
+local TargetTabBtn = Instance.new("TextButton", TabBar)
+TargetTabBtn.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+TargetTabBtn.Position = UDim2.new(0, 4, 0, 3)
+TargetTabBtn.Size = UDim2.new(0.33, -6, 1, -6)
+TargetTabBtn.Text = "Target Player"
+TargetTabBtn.TextColor3 = Color3.fromRGB(0, 255, 128)
+TargetTabBtn.Font = Enum.Font.SourceSansBold
+TargetTabBtn.TextSize = 12
+Instance.new("UICorner", TargetTabBtn).CornerRadius = UDim.new(0, 4)
+
+local MiscTabBtn = Instance.new("TextButton", TabBar)
+MiscTabBtn.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
+MiscTabBtn.Position = UDim2.new(0.33, 2, 0, 3)
+MiscTabBtn.Size = UDim2.new(0.33, -6, 1, -6)
+MiscTabBtn.Text = "Misc List"
+MiscTabBtn.TextColor3 = Color3.fromRGB(170, 170, 170)
+MiscTabBtn.Font = Enum.Font.SourceSansBold
+MiscTabBtn.TextSize = 12
+Instance.new("UICorner", MiscTabBtn).CornerRadius = UDim.new(0, 4)
+
+local OtherTabBtn = Instance.new("TextButton", TabBar)
+OtherTabBtn.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
+OtherTabBtn.Position = UDim2.new(0.66, 0, 0, 3)
+OtherTabBtn.Size = UDim2.new(0.33, -6, 1, -6)
+OtherTabBtn.Text = "Other Script"
+OtherTabBtn.TextColor3 = Color3.fromRGB(170, 170, 170)
+OtherTabBtn.Font = Enum.Font.SourceSansBold
+OtherTabBtn.TextSize = 12
+Instance.new("UICorner", OtherTabBtn).CornerRadius = UDim.new(0, 4)
+
+-- Các Container chứa tính năng của từng Tab
+local TargetContainer = Instance.new("ScrollingFrame", MainFrame)
+TargetContainer.Position = UDim2.new(0, 10, 0, 85)
+TargetContainer.Size = UDim2.new(1, -20, 1, -95)
+TargetContainer.BackgroundTransparency = 1
+TargetContainer.CanvasSize = UDim2.new(0, 0, 0, 530)
+TargetContainer.ScrollBarThickness = 4
+TargetContainer.Visible = true
+
+local MiscContainer = Instance.new("ScrollingFrame", MainFrame)
+MiscContainer.Position = UDim2.new(0, 10, 0, 85)
+MiscContainer.Size = UDim2.new(1, -20, 1, -95)
+MiscContainer.BackgroundTransparency = 1
+MiscContainer.CanvasSize = UDim2.new(0, 0, 0, 680)
+MiscContainer.ScrollBarThickness = 4
+MiscContainer.Visible = false
+
+local OtherContainer = Instance.new("ScrollingFrame", MainFrame)
+OtherContainer.Position = UDim2.new(0, 10, 0, 85)
+OtherContainer.Size = UDim2.new(1, -20, 1, -95)
+OtherContainer.BackgroundTransparency = 1
+OtherContainer.CanvasSize = UDim2.new(0, 0, 0, 300)
+OtherContainer.ScrollBarThickness = 4
+OtherContainer.Visible = false
+
+TargetTabBtn.MouseButton1Click:Connect(function()
+    TargetContainer.Visible = true
+    MiscContainer.Visible = false
+    OtherContainer.Visible = false
+    TargetTabBtn.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+    TargetTabBtn.TextColor3 = Color3.fromRGB(0, 255, 128)
+    MiscTabBtn.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
+    MiscTabBtn.TextColor3 = Color3.fromRGB(170, 170, 170)
+    OtherTabBtn.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
+    OtherTabBtn.TextColor3 = Color3.fromRGB(170, 170, 170)
+end)
+
+MiscTabBtn.MouseButton1Click:Connect(function()
+    TargetContainer.Visible = false
+    MiscContainer.Visible = true
+    OtherContainer.Visible = false
+    MiscTabBtn.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+    MiscTabBtn.TextColor3 = Color3.fromRGB(0, 255, 128)
+    TargetTabBtn.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
+    TargetTabBtn.TextColor3 = Color3.fromRGB(170, 170, 170)
+    OtherTabBtn.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
+    OtherTabBtn.TextColor3 = Color3.fromRGB(170, 170, 170)
+end)
+
+OtherTabBtn.MouseButton1Click:Connect(function()
+    TargetContainer.Visible = false
+    MiscContainer.Visible = false
+    OtherContainer.Visible = true
+    OtherTabBtn.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+    OtherTabBtn.TextColor3 = Color3.fromRGB(0, 255, 128)
+    TargetTabBtn.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
+    TargetTabBtn.TextColor3 = Color3.fromRGB(170, 170, 170)
+    MiscTabBtn.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
+    MiscTabBtn.TextColor3 = Color3.fromRGB(170, 170, 170)
+end)
+
+-- Hàm tạo các nút Toggle và ValueBox
+local function CreateTargetToggle(name, desc, yPos, callback)
+    local row = Instance.new("Frame", TargetContainer)
+    row.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
+    row.Position = UDim2.new(0, 0, 0, yPos)
+    row.Size = UDim2.new(1, 0, 0, 55)
+    Instance.new("UICorner", row).CornerRadius = UDim.new(0, 6)
+    
+    local titleLab = Instance.new("TextLabel", row)
+    titleLab.Position = UDim2.new(0, 12, 0, 6)
+    titleLab.Size = UDim2.new(0, 280, 0, 22)
+    titleLab.Text = name
+    titleLab.TextColor3 = Color3.new(1, 1, 1)
+    titleLab.Font = Enum.Font.SourceSansBold
+    titleLab.TextSize = 14
+    titleLab.BackgroundTransparency = 1
+    titleLab.TextXAlignment = Enum.TextXAlignment.Left
+    
+    local descLab = Instance.new("TextLabel", row)
+    descLab.Position = UDim2.new(0, 12, 0, 26)
+    descLab.Size = UDim2.new(0, 310, 0, 20)
+    descLab.Text = desc
+    descLab.TextColor3 = Color3.fromRGB(170, 170, 170)
+    descLab.Font = Enum.Font.SourceSans
+    descLab.TextSize = 11
+    descLab.BackgroundTransparency = 1
+    descLab.TextXAlignment = Enum.TextXAlignment.Left
+    
+    local switch = Instance.new("TextButton", row)
+    switch.Position = UDim2.new(1, -65, 0.5, -15)
+    switch.Size = UDim2.new(0, 55, 0, 30)
+    switch.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
+    switch.Text = "OFF"
+    switch.TextColor3 = Color3.new(1, 1, 1)
+    switch.Font = Enum.Font.SourceSansBold
+    Instance.new("UICorner", switch).CornerRadius = UDim.new(1, 0)
+    
+    local state = false
+    switch.MouseButton1Click:Connect(function()
+        state = not state
+        if state then
+            switch.BackgroundColor3 = Color3.fromRGB(0, 200, 100)
+            switch.Text = "ON"
+        else
+            switch.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
+            switch.Text = "OFF"
+        end
+        callback(state)
+    end)
+end
+
+local function CreateTargetValueBox(name, defaultVal, yPos, callback)
+    local row = Instance.new("Frame", TargetContainer)
+    row.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+    row.Position = UDim2.new(0, 0, 0, yPos)
+    row.Size = UDim2.new(1, 0, 0, 45)
+    Instance.new("UICorner", row).CornerRadius = UDim.new(0, 6)
+    
+    local titleLab = Instance.new("TextLabel", row)
+    titleLab.Position = UDim2.new(0, 12, 0, 0)
+    titleLab.Size = UDim2.new(0, 250, 1, 0)
+    titleLab.Text = name
+    titleLab.TextColor3 = Color3.fromRGB(200, 200, 200)
+    titleLab.Font = Enum.Font.SourceSansBold
+    titleLab.TextSize = 13
+    titleLab.BackgroundTransparency = 1
+    titleLab.TextXAlignment = Enum.TextXAlignment.Left
+    
+    local textBox = Instance.new("TextBox", row)
+    textBox.Position = UDim2.new(1, -85, 0.5, -14)
+    textBox.Size = UDim2.new(0, 75, 0, 28)
+    textBox.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
+    textBox.Text = tostring(defaultVal)
+    textBox.TextColor3 = Color3.new(1, 1, 1)
+    textBox.Font = Enum.Font.SourceSansBold
+    textBox.TextSize = 14
+    Instance.new("UICorner", textBox).CornerRadius = UDim.new(0, 4)
+    
+    textBox.FocusLost:Connect(function()
+        local num = tonumber(textBox.Text)
+        if num then
+            callback(num)
+        else
+            textBox.Text = tostring(defaultVal)
+        end
+    end)
+end
+
+local function CreateMiscToggle(name, desc, yPos, callback)
+    local row = Instance.new("Frame", MiscContainer)
+    row.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
+    row.Position = UDim2.new(0, 0, 0, yPos)
+    row.Size = UDim2.new(1, 0, 0, 55)
+    Instance.new("UICorner", row).CornerRadius = UDim.new(0, 6)
+    
+    local titleLab = Instance.new("TextLabel", row)
+    titleLab.Position = UDim2.new(0, 12, 0, 6)
+    titleLab.Size = UDim2.new(0, 280, 0, 22)
+    titleLab.Text = name
+    titleLab.TextColor3 = Color3.new(1, 1, 1)
+    titleLab.Font = Enum.Font.SourceSansBold
+    titleLab.TextSize = 14
+    titleLab.BackgroundTransparency = 1
+    titleLab.TextXAlignment = Enum.TextXAlignment.Left
+    
+    local descLab = Instance.new("TextLabel", row)
+    descLab.Position = UDim2.new(0, 12, 0, 26)
+    descLab.Size = UDim2.new(0, 310, 0, 20)
+    descLab.Text = desc
+    descLab.TextColor3 = Color3.fromRGB(170, 170, 170)
+    descLab.Font = Enum.Font.SourceSans
+    descLab.TextSize = 11
+    descLab.BackgroundTransparency = 1
+    descLab.TextXAlignment = Enum.TextXAlignment.Left
+    
+    local switch = Instance.new("TextButton", row)
+    switch.Position = UDim2.new(1, -65, 0.5, -15)
+    switch.Size = UDim2.new(0, 55, 0, 30)
+    switch.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
+    switch.Text = "OFF"
+    switch.TextColor3 = Color3.new(1, 1, 1)
+    switch.Font = Enum.Font.SourceSansBold
+    Instance.new("UICorner", switch).CornerRadius = UDim.new(1, 0)
+    
+    local state = false
+    switch.MouseButton1Click:Connect(function()
+        state = not state
+        if state then
+            switch.BackgroundColor3 = Color3.fromRGB(0, 200, 100)
+            switch.Text = "ON"
+        else
+            switch.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
+            switch.Text = "OFF"
+        end
+        callback(state)
+    end)
+end
+
+local function CreateMiscValueBox(name, defaultVal, yPos, callback)
+    local row = Instance.new("Frame", MiscContainer)
+    row.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+    row.Position = UDim2.new(0, 0, 0, yPos)
+    row.Size = UDim2.new(1, 0, 0, 45)
+    Instance.new("UICorner", row).CornerRadius = UDim.new(0, 6)
+    
+    local titleLab = Instance.new("TextLabel", row)
+    titleLab.Position = UDim2.new(0, 12, 0, 0)
+    titleLab.Size = UDim2.new(0, 250, 1, 0)
+    titleLab.Text = name
+    titleLab.TextColor3 = Color3.fromRGB(200, 200, 200)
+    titleLab.Font = Enum.Font.SourceSansBold
+    titleLab.TextSize = 13
+    titleLab.BackgroundTransparency = 1
+    titleLab.TextXAlignment = Enum.TextXAlignment.Left
+    
+    local textBox = Instance.new("TextBox", row)
+    textBox.Position = UDim2.new(1, -85, 0.5, -14)
+    textBox.Size = UDim2.new(0, 75, 0, 28)
+    textBox.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
+    textBox.Text = tostring(defaultVal)
+    textBox.TextColor3 = Color3.new(1, 1, 1)
+    textBox.Font = Enum.Font.SourceSansBold
+    textBox.TextSize = 14
+    Instance.new("UICorner", textBox).CornerRadius = UDim.new(0, 4)
+    
+    textBox.FocusLost:Connect(function()
+        local num = tonumber(textBox.Text)
+        if num then
+            callback(num)
+        else
+            textBox.Text = tostring(defaultVal)
+        end
+    end)
+end
+
+local function CreateOtherScriptButton(name, desc, scriptUrl, yPos)
+    local row = Instance.new("Frame", OtherContainer)
+    row.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
+    row.Position = UDim2.new(0, 0, 0, yPos)
+    row.Size = UDim2.new(1, 0, 0, 55)
+    Instance.new("UICorner", row).CornerRadius = UDim.new(0, 6)
+    
+    local titleLab = Instance.new("TextLabel", row)
+    titleLab.Position = UDim2.new(0, 12, 0, 6)
+    titleLab.Size = UDim2.new(0, 280, 0, 22)
+    titleLab.Text = name
+    titleLab.TextColor3 = Color3.new(1, 1, 1)
+    titleLab.Font = Enum.Font.SourceSansBold
+    titleLab.TextSize = 14
+    titleLab.BackgroundTransparency = 1
+    titleLab.TextXAlignment = Enum.TextXAlignment.Left
+    
+    local descLab = Instance.new("TextLabel", row)
+    descLab.Position = UDim2.new(0, 12, 0, 26)
+    descLab.Size = UDim2.new(0, 280, 0, 20)
+    descLab.Text = desc
+    descLab.TextColor3 = Color3.fromRGB(170, 170, 170)
+    descLab.Font = Enum.Font.SourceSans
+    descLab.TextSize = 11
+    descLab.BackgroundTransparency = 1
+    descLab.TextXAlignment = Enum.TextXAlignment.Left
+    
+    local execBtn = Instance.new("TextButton", row)
+    execBtn.Position = UDim2.new(1, -85, 0.5, -15)
+    execBtn.Size = UDim2.new(0, 75, 0, 30)
+    execBtn.BackgroundColor3 = Color3.fromRGB(0, 150, 255)
+    execBtn.Text = "Run"
+    execBtn.TextColor3 = Color3.new(1, 1, 1)
+    execBtn.Font = Enum.Font.SourceSansBold
+    execBtn.TextSize = 13
+    Instance.new("UICorner", execBtn).CornerRadius = UDim.new(0, 6)
+    
+    execBtn.MouseButton1Click:Connect(function()
+        pcall(function()
+            loadstring(game:HttpGet(scriptUrl))()
+        end)
+    end)
+end
+
+-- Biến lưu trạng thái tính năng
+local isSpecTarget = false
+local isRefreshTarget = false
+local isOrbit = false
+local orbitDistance = 15
+local orbitSpeed = 3
+local isAttach = false
+local attachDistance = 3
+
+local isFly = false
+local isNoclip = false
+local isAutoDownslam = false
+local isNoDashCD = false
+local isKillAll = false
+local isESP = false
+local isAutoRatioNanami = false
+local isInvisibleBlock = false
+local isHigurumaVoteViewer = false
+local isJarAnimation = false
+local jarSpeed = 25
+
+local flySpeed = 50
+local flyBodyVelocity = nil
+local flyBodyGyro = nil
+
+-- ĐIỀN NỘI DUNG TAB 1: TARGET PLAYER
+CreateTargetToggle("Spec Target (Theo dõi mục tiêu)", "Chỉ camera nhìn thẳng vào mục tiêu", 0, function(isOn) isSpecTarget = isOn end)
+CreateTargetToggle("Refresh Target (Làm mới mục tiêu)", "Tự động đổi sang mục tiêu gần nhất khác", 60, function(isOn) isRefreshTarget = isOn end)
+CreateTargetToggle("Orbit Target (Xoay vòng)", "Xoay vòng tròn quanh mục tiêu gần nhất", 120, function(isOn)
+    isOrbit = isOn
+    if isOn then isAttach = false end
+end)
+CreateTargetValueBox("   ↳ Orbit Distance (Khoảng cách xoay)", 15, 180, function(val) orbitDistance = val end)
+CreateTargetValueBox("   ↳ Orbit Speed (Tốc độ quay)", 3, 230, function(val) orbitSpeed = val end)
+CreateTargetToggle("Attach Target (Bám dính)", "Bám sát ngay vị trí mục tiêu gần nhất", 285, function(isOn)
+    isAttach = isOn
+    if isOn then isOrbit = false end
+end)
+CreateTargetValueBox("   ↳ Attach Distance (Khoảng cách bám)", 3, 345, function(val) attachDistance = val end)
+
+-- Chọn danh sách người chơi thủ công
+local targetSelectRow = Instance.new("Frame", TargetContainer)
+targetSelectRow.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+targetSelectRow.Position = UDim2.new(0, 0, 0, 400)
+targetSelectRow.Size = UDim2.new(1, 0, 0, 50)
+Instance.new("UICorner", targetSelectRow).CornerRadius = UDim.new(0, 6)
+
+local targetSelectLabel = Instance.new("TextLabel", targetSelectRow)
+targetSelectLabel.Position = UDim2.new(0, 12, 0, 0)
+targetSelectLabel.Size = UDim2.new(0, 180, 1, 0)
+targetSelectLabel.Text = "Chọn Target Cụ Thể:"
+targetSelectLabel.TextColor3 = Color3.fromRGB(200, 200, 200)
+targetSelectLabel.Font = Enum.Font.SourceSansBold
+targetSelectLabel.TextSize = 13
+targetSelectLabel.BackgroundTransparency = 1
+targetSelectLabel.TextXAlignment = Enum.TextXAlignment.Left
+
+local targetDropdownBtn = Instance.new("TextButton", targetSelectRow)
+targetDropdownBtn.Position = UDim2.new(1, -195, 0.5, -14)
+targetDropdownBtn.Size = UDim2.new(0, 185, 0, 28)
+targetDropdownBtn.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
+targetDropdownBtn.Text = "Bấm để chọn Player"
+targetDropdownBtn.TextColor3 = Color3.fromRGB(0, 255, 128)
+targetDropdownBtn.Font = Enum.Font.SourceSansBold
+targetDropdownBtn.TextSize = 12
+Instance.new("UICorner", targetDropdownBtn).CornerRadius = UDim.new(0, 4)
+
+local playerListFrame = Instance.new("ScrollingFrame", ScreenGui)
+playerListFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+playerListFrame.Position = UDim2.new(0.5, -100, 0.5, -120)
+playerListFrame.Size = UDim2.new(0, 200, 0, 240)
+playerListFrame.Visible = false
+playerListFrame.CanvasSize = UDim2.new(0, 0, 0, 0)
+playerListFrame.ScrollBarThickness = 4
+Instance.new("UICorner", playerListFrame).CornerRadius = UDim.new(0, 8)
+
+local UIListLayout = Instance.new("UIListLayout", playerListFrame)
+UIListLayout.SortOrder = Enum.SortOrder.LayoutOrder
+UIListLayout.Padding = UDim.new(0, 4)
+
+local manualSelectedTarget = nil
+
+targetDropdownBtn.MouseButton1Click:Connect(function()
+    playerListFrame.Visible = not playerListFrame.Visible
+    if playerListFrame.Visible then
+        for _, child in ipairs(playerListFrame:GetChildren()) do
+            if child:IsA("TextButton") then child:Destroy() end
+        end
+        local count = 0
+        for _, p in ipairs(Players:GetPlayers()) do
+            if p ~= LocalPlayer then
+                count = count + 1
+                local pBtn = Instance.new("TextButton", playerListFrame)
+                pBtn.Size = UDim2.new(1, -10, 0, 30)
+                pBtn.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+                pBtn.Text = p.Name
+                pBtn.TextColor3 = Color3.new(1, 1, 1)
+                pBtn.Font = Enum.Font.SourceSansBold
+                pBtn.TextSize = 13
+                Instance.new("UICorner", pBtn).CornerRadius = UDim.new(0, 4)
+                
+                pBtn.MouseButton1Click:Connect(function()
+                    if p.Character and p.Character:FindFirstChild("HumanoidRootPart") then
+                        manualSelectedTarget = p.Character
+                        TargetInfoFrame.Visible = true
+                        targetDropdownBtn.Text = p.Name
+                    end
+                    playerListFrame.Visible = false
+                end)
+            end
+        end
+        playerListFrame.CanvasSize = UDim2.new(0, 0, 0, count * 34)
+    end
+end)
+
+-- ĐIỀN NỘI DUNG TAB 2: MISC LIST
+CreateMiscToggle("Modo Voo (Fly)", "Bay tự do theo góc nhìn Camera", 0, function(isOn) isFly = isOn end)
+CreateMiscToggle("Noclip", "Đi xuyên tường và vật thể", 60, function(isOn) isNoclip = isOn end)
+CreateMiscToggle("Auto Downslam", "Tự động đập xuống đất liên tục", 120, function(isOn) isAutoDownslam = isOn end)
+CreateMiscToggle("No Dash Cooldown", "Xóa thời gian chờ Dash", 180, function(isOn)
+    isNoDashCD = isOn
+    if isNoDashCD then
+        pcall(function()
+            local oldTick = tick
+            local fakeTime = oldTick()
+            hookfunction(tick, function(...)
+                if isNoDashCD then
+                    fakeTime = fakeTime + 100
+                    return fakeTime
+                end
+                return oldTick(...)
+            end)
+        end)
+    end
+end)
+CreateMiscToggle("KillAll / BringAll", "Kéo tất cả người chơi về phía bạn", 240, function(isOn)
+    isKillAll = isOn
+    if isKillAll then
+        task.spawn(function()
+            while isKillAll do
+                for _, player in ipairs(Players:GetPlayers()) do
+                    if not isKillAll then break end
+                    if player ~= LocalPlayer and player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
+                        local localChar = LocalPlayer.Character
+                        if localChar and localChar:FindFirstChild("HumanoidRootPart") then
+                            localChar.HumanoidRootPart.CFrame = player.Character.HumanoidRootPart.CFrame
+                        end
+                    end
+                    task.wait(0.02)
+                end
+                task.wait()
+            end
+        end)
+    end
+end)
+CreateMiscToggle("ESP Highlight", "Nhìn xuyên tường định vị người chơi", 300, function(isOn)
+    isESP = isOn
+    if not isESP then
+        for _, p in ipairs(Players:GetPlayers()) do
+            if p.Character and p.Character:FindFirstChild("AK_ESP") then p.Character.AK_ESP:Destroy() end
+        end
+    end
+end)
+CreateMiscToggle("Auto Ratio Nanami", "Tự động căn chuẩn timing kích hoạt kỹ năng Nanami", 360, function(isOn) isAutoRatioNanami = isOn end)
+CreateMiscToggle("Invisible Block", "Kích hoạt khối vô hình hỗ trợ", 420, function(isOn)
+    isInvisibleBlock = isOn
+    if isInvisibleBlock then
+        pcall(function() loadstring(game:HttpGet("https://raw.githubusercontent.com/NotEnoughJack/LuaFluentDependancies/refs/heads/main/InvisibleBlock.lua"))() end)
+    end
+end)
+CreateMiscToggle("Higuruma Vote Viewer", "Xem phiếu bầu của Higuruma", 480, function(isOn) isHigurumaVoteViewer = isOn end)
+CreateMiscToggle("lọ🫙🐿️", "Thực hiện hành động jerk off cực sung với lọ", 540, function(isOn) isJarAnimation = isOn end)
+CreateMiscValueBox("   ↳ Jerk Speed (Tốc độ quay tay)", 25, 600, function(val) jarSpeed = val end)
+
+-- ĐIỀN NỘI DUNG TAB 3: OTHER SCRIPT
+CreateOtherScriptButton("TBO", "TBO Script", "https://raw.githubusercontent.com/cool5013/TBO/main/TBOscript", 0)
+CreateOtherScriptButton("Infinite Yield", "Admin Commands", "https://raw.githubusercontent.com/EdgeIY/infiniteyield/master/source", 60)
+CreateOtherScriptButton("Dex Explorer", "Trình duyệt kiểm tra Explorer / Properties", "https://gist.githubusercontent.com/dementiaenjoyer/1f81ce473487cfbb3b8bc19d9b62fef2/raw", 120)
+CreateOtherScriptButton("Remote Spy", "Theo dõi sự kiện RemoteEvent", "https://raw.githubusercontent.com/exxtremeshadow/Display-Scripts/main/RemoteSpy.lua", 180)
+
+-- Nút đóng mở giao diện
+CloseBtn.MouseButton1Click:Connect(function()
+    MainFrame.Visible = false
+    playerListFrame.Visible = false
+end)
+
+ToggleMenuBtn.MouseButton1Click:Connect(function()
+    MainFrame.Visible = not MainFrame.Visible
+end)
+
+-- Hàm tự động tìm mục tiêu gần nhất
+local function FindNearestTarget()
+    local shortestDistance = 500
+    local targetPlayer = nil
+    local char = LocalPlayer.Character
+    if char and char:FindFirstChild("HumanoidRootPart") then
+        local myPos = char.HumanoidRootPart.Position
+        for _, player in ipairs(Players:GetPlayers()) do
+            if player ~= LocalPlayer and player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
+                local humanoid = player.Character:FindFirstChild("Humanoid")
+                if humanoid and humanoid.Health > 0 then
+                    local distance = (player.Character.HumanoidRootPart.Position - myPos).Magnitude
+                    if distance < shortestDistance then
+                        shortestDistance = distance
+                        targetPlayer = player.Character
+                    end
+                end
+            end
+        end
+    end
+    return targetPlayer
+end
+
+local orbitAngle = 0
+local jarTime = 0
+
+-- Vòng lặp xử lý tính năng liên tục
+RunService.RenderStepped:Connect(function(dt)
+    local char = LocalPlayer.Character
+    if char and char:FindFirstChild("HumanoidRootPart") then
+        local hrp = char.HumanoidRootPart
+        local hum = char:FindFirstChildOfClass("Humanoid")
+        
+        if isNoclip then
+            for _, part in ipairs(char:GetDescendants()) do
+                if part:IsA("BasePart") then part.CanCollide = false end
+            end
+        end
+
+        if isESP then
+            for _, p in ipairs(Players:GetPlayers()) do
+                if p ~= LocalPlayer and p.Character and not p.Character:FindFirstChild("AK_ESP") then
+                    local hl = Instance.new("Highlight", p.Character)
+                    hl.Name = "AK_ESP"
+                    hl.FillColor = Color3.fromRGB(255, 0, 0)
+                end
+            end
+        end
+
+        if isJarAnimation then
+            hum.PlatformStand = true
+            jarTime = jarTime + (dt * jarSpeed)
+            local basePos = hrp.Position
+            local pushPull = math.sin(jarTime) * 1.8
+            local tilt = math.rad(55) + math.sin(jarTime * 2) * 0.4
+            hrp.CFrame = CFrame.new(basePos) * CFrame.Angles(tilt, 0, 0) + Vector3.new(0, pushPull * 0.2, 0)
+        end
+
+        if isFly then
+            hum.PlatformStand = true
+            if not flyBodyVelocity or not flyBodyVelocity.Parent then
+                flyBodyVelocity = Instance.new("BodyVelocity")
+                flyBodyVelocity.MaxForce = Vector3.new(math.huge, math.huge, math.huge)
+                flyBodyVelocity.Parent = hrp
+            end
+            if not flyBodyGyro or not flyBodyGyro.Parent then
+                flyBodyGyro = Instance.new("BodyGyro")
+                flyBodyGyro.MaxTorque = Vector3.new(math.huge, math.huge, math.huge)
+                flyBodyGyro.Parent = hrp
+            end
+            flyBodyVelocity.Velocity = Camera.CFrame.LookVector * flySpeed
+            flyBodyGyro.CFrame = Camera.CFrame
+        else
+            if not isJarAnimation then
+                if flyBodyVelocity then flyBodyVelocity:Destroy() flyBodyVelocity = nil end
+                if flyBodyGyro then flyBodyGyro:Destroy() flyBodyGyro = nil end
+            end
+            
+            local activeTarget = manualSelectedTarget
+            if not activeTarget or not activeTarget:FindFirstChild("HumanoidRootPart") or activeTarget.Humanoid.Health <= 0 then
+                activeTarget = FindNearestTarget()
+            end
+
+            if (isAttach or isOrbit) and activeTarget and activeTarget:FindFirstChild("HumanoidRootPart") then
+                local enemyHrp = activeTarget.HumanoidRootPart
+                local enemyHum = activeTarget:FindFirstChildOfClass("Humanoid")
+                local enemyPlayer = Players:GetPlayerFromCharacter(activeTarget)
+                
+                if enemyPlayer and enemyHum then
+                    local dist = math.floor((enemyHrp.Position - hrp.Position).Magnitude)
+                    local hpPercent = math.floor((enemyHum.Health / enemyHum.MaxHealth) * 100)
+                    TargetNameLabel.Text = "Target: " .. enemyPlayer.Name
+                    TargetDistLabel.Text = "Distance: " .. dist .. " studs | HP: " .. hpPercent .. "%"
+                    TargetInfoFrame.Visible = true
+                end
+                
+                Camera.CameraType = Enum.CameraType.Scriptable
+                hum.PlatformStand = true
+                
+                if isAttach then
+                    hrp.CFrame = enemyHrp.CFrame * CFrame.new(0, 0, attachDistance)
+                    Camera.CFrame = Camera.CFrame:Lerp(CFrame.new(hrp.Position - (enemyHrp.CFrame.LookVector * 6) + Vector3.new(0, 2, 0), enemyHrp.Position), 0.3)
+                elseif isOrbit then
+                    orbitAngle = orbitAngle + (orbitSpeed * dt * 5)
+                    local offsetX = math.cos(orbitAngle) * orbitDistance
+                    local offsetZ = math.sin(orbitAngle) * orbitDistance
+                    local orbitPos = enemyHrp.Position + Vector3.new(offsetX, 2, offsetZ)
+                    
+                    hrp.CFrame = CFrame.new(orbitPos, enemyHrp.Position)
+                    Camera.CFrame = Camera.CFrame:Lerp(CFrame.new(orbitPos - ((enemyHrp.Position - orbitPos).Unit * 8) + Vector3.new(0, 3, 0), enemyHrp.Position), 0.3)
+                end
+            elseif isSpecTarget and activeTarget and activeTarget:FindFirstChild("HumanoidRootPart") then
+                TargetInfoFrame.Visible = true
+                Camera.CameraType = Enum.CameraType.Scriptable
+                if hum.PlatformStand and not isJarAnimation then hum.PlatformStand = false end
+                Camera.CFrame = Camera.CFrame:Lerp(CFrame.new(Camera.CFrame.Position, activeTarget.HumanoidRootPart.Position + Vector3.new(0, 1, 0)), 0.3)
+            else
+                TargetInfoFrame.Visible = false
+                if hum and hum.PlatformStand and not isJarAnimation and not isFly then
+                    hum.PlatformStand = false
+                end
+                if Camera.CameraType == Enum.CameraType.Scriptable then
+                    Camera.CameraType = Enum.CameraType.Custom
+                end
+            end
+        end
+    end
+end)
